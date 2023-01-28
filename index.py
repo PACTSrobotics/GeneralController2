@@ -1,29 +1,30 @@
 import pygame
+from communicate import sendMovement, sendSound
 
 pygame.init()
 
+DEADZONE = 0.05
+def deadzone(val: float):
+    if (abs(val) < DEADZONE):
+        return 0
+    return min(1, val)
+
 def main():
-    joystick
-    while joystick:
+    running = True
+    joystick = None
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.JOYDEVICEADDED:
-                if not event.instance_id == 0:
-                    continue
-                joystick = pygame.joystick.Joystick(event.device_index)
+                if not joystick:
+                    joystick = pygame.joystick.Joystick(event.device_index)
+            if event.type == pygame.JOYBUTTONDOWN:
+                sendSound(event.button)
             if event.type == pygame.JOYDEVICEREMOVED:
-                if not event.instance_id == 0:
-                    continue
-                del joystick
+                running = False
 
         if joystick:
-            print(f'{joystick.get_axis(0):>6.3f}, {joystick.get_axis(1):>6.3f}')
+            sendMovement(deadzone(joystick.get_axis(0)), deadzone(joystick.get_axis(1)),  deadzone(joystick.get_axis(2)))
 
-            hats = joystick.get_numhats()
-
-            # Hat position. All or nothing for direction, not a float like
-            # get_axis(). Position is a tuple of int values (x, y).
-            for i in range(hats):
-                hat = joystick.get_hat(i)
 
 
 if __name__ == "__main__":
