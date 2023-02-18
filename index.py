@@ -16,11 +16,15 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.JOYDEVICEADDED:
                 if not joystick:
+                    print("Controller connected")
                     joystick = pygame.joystick.Joystick(event.device_index)
             if event.type == pygame.JOYBUTTONDOWN:
                 sendSound(event.button)
             if event.type == pygame.JOYDEVICEREMOVED:
-                running = False
+                if event.instance_id == joystick.get_instance_id():
+                    running = False
+                    print("Controller lost")
+                    main()
 
         if joystick:
             sendMovement(deadzone(joystick.get_axis(0)), deadzone(joystick.get_axis(1)),  deadzone(joystick.get_axis(2)))
@@ -28,5 +32,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Ended program")
+
     pygame.quit()

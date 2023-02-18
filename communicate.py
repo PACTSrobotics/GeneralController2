@@ -13,13 +13,17 @@ with open('config.yml') as file:
 
 SERVER_IP = cfg["server"]["address"]
 SERVER_PORT = cfg["server"]["port"]
+MOTOR_STOP = cfg["servoMotor"]["stop"]
+MOTOR_SPEED = cfg["servoMotor"]["speed"]
+HEAD_STOP = cfg["headMotor"]["stop"]
+HEAD_SPEED = cfg["headMotor"]["speed"]
 
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
 
 def sendMovement(x = 0, y = 0, head = 0):
     leftDrive, rightDrive, headDrive = getDrives(x, y, head)
-    print(leftDrive, rightDrive)
+    print(leftDrive, rightDrive, headDrive)
 
     command = {
         "commands": {
@@ -39,7 +43,7 @@ def sendMovement(x = 0, y = 0, head = 0):
         }
     }
 
-    # sendCommand(command)
+    sendCommand(command)
     return True
 
 def getDrives(x, y, head):
@@ -61,7 +65,12 @@ def getDrives(x, y, head):
         leftDrive = 0
         rightDrive = 0
 
-    headDrive = head
+    r = min(r, 1)
+    leftDrive = leftDrive * r * MOTOR_SPEED + MOTOR_STOP
+    rightDrive = rightDrive * r * MOTOR_SPEED + MOTOR_STOP
+
+    #exponential for finer control
+    headDrive = head * head * HEAD_SPEED + HEAD_STOP
 
     return (leftDrive, rightDrive, headDrive)
 
